@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 95%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; display: none; }
+        .download-btn {
+            background-color: #28a745;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+            padding: 12px;
+            width: 90%;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .download-btn:hover { background-color: #218838; }
+        .error { color: red; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Social Video Downloader</h2>
+    <p>Paste your YouTube or TikTok link below:</p>
+    
+    <input type="text" id="videoUrl" placeholder="https://tiktok.com..." />
+    <button onclick="fetchVideo()">Fetch Video</button>
+    
+    <div id="error" class="error"></div>
+    
+    <div id="result" class="result">
+        <p id="videoTitle" style="font-weight: bold;"></p>
+        <a id="downloadLink" class="download-btn" href="#" target="_blank" download>Download Video</a>
+    </div>
+</div>
+
+<script>
+    async function fetchVideo() {
+        const urlInput = document.getElementById('videoUrl').value;
+        const errorDiv = document.getElementById('error');
+        const resultDiv = document.getElementById('result');
+        const downloadLink = document.getElementById('downloadLink');
+        const videoTitle = document.getElementById('videoTitle');
+        
+        errorDiv.innerText = "";
+        resultDiv.style.display = "none";
+        
+        if (!urlInput) {
+            errorDiv.innerText = "Please paste a valid link!";
+            return;
+        }
+
+        try {
+            // Sends the URL to our local Python backend
+            const response = await fetch('http://127.0.0', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: urlInput })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                videoTitle.innerText = data.title;
+                downloadLink.href = data.download_url;
+                resultDiv.style.display = "block";
+            } else {
+                errorDiv.innerText = data.detail || "Failed to parse video.";
+            }
+        } catch (err) {
+            errorDiv.innerText = "Error connecting to backend server. Make sure main.py is running.";
+        }
+    }
+</script>
+
+</body>
+  </html>
+  
