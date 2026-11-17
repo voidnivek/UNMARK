@@ -65,7 +65,7 @@ raise HTTPException(status_code=404, detail="Could not extract a direct video li
 return {
 "title": info.get("title", "Video"),
 "thumbnail": info.get("thumbnail", ""),
-"download_url": f"/api/download?url={urllib.parse.quote(video_url)}",
+"video_url": f"/api/download?url={urllib.parse.quote(video_url)}",
 "platform": info.get("extractor_key", "Unknown")
 }
 except Exception as e:
