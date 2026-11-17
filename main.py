@@ -27,7 +27,7 @@ if raw_url:
 return {
 "title": video_data.get("title") or "TikTok Video",
 "thumbnail": video_data.get("cover", ""),
-"download_url": f"/api/download?url={urllib.parse.quote(raw_url)}",
+"video_url": f"/api/download?url={urllib.parse.quote(raw_url)}",
 "platform": "TikTok"
 }
 return None
