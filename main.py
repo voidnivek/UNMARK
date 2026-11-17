@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import yt_dlp
+import requests
+import urllib.parse
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
@@ -53,7 +56,7 @@ def extract_video(request: VideoRequest):
             return {
                 "title": info.get("title", "Video"),
                 "thumbnail": info.get("thumbnail", ""),
-                "download_url": video_url,
+                "download_url": f"/api/download?url={urllib.parse.quote(download_url)}",
                 "platform": info.get("extractor_key", "Unknown")
             }
 
