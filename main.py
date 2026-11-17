@@ -18,16 +18,17 @@ url: str
 def serve_frontend():
 return FileResponse("index.html")
 def extract_tiktok_fallback(url: str):
-resp = requests.post("tikwm.com", data={"url": url, "hd": 1}, timeout=15)
+api_url = "tikwm.com"
+resp = requests.post(api_url, data={"url": url, "hd": 1}, timeout=15)
 data = resp.json()
 if data.get("code") == 0 and data.get("data"):
 video_data = data["data"]
-raw_url = video_data.get("hdplay") or video_data.get("play")
-if raw_url:
+video_url = video_data.get("hdplay") or video_data.get("play")
+if video_url:
 return {
 "title": video_data.get("title") or "TikTok Video",
 "thumbnail": video_data.get("cover", ""),
-"video_url": f"/api/download?url={urllib.parse.quote(raw_url)}",
+"download_url": f"/api/download?url={urllib.parse.quote(video_url)}",
 "platform": "TikTok"
 }
 return None
@@ -65,8 +66,24 @@ raise HTTPException(status_code=404, detail="Could not extract a direct video li
 return {
 "title": info.get("title", "Video"),
 "thumbnail": info.get("thumbnail", ""),
-"video_url": f"/api/download?url={urllib.parse.quote(video_url)}",
+"download_url": f"/api/download?url={urllib.parse.quote(video_url)}",
 "platform": info.get("extractor_key", "Unknown")
 }
 except Exception as e:
 raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+@app.get("/api/download")
+def download_video(url: str):
+headers = {
+"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+"Referer": "tiktok.com"
+}
+try:
+r = requests.get(url, headers=headers, stream=True, timeout=30)
+r.raise_for_status()
+return StreamingResponse(
+r.iter_content(chunk_size=1024 * 1024),
+media_type="video/mp4",
+headers={"Content-Disposition": 'attachment; filename="unmark_video.mp4"'}
+)
+except Exception as e:
+raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
